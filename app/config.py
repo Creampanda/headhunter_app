@@ -1,3 +1,4 @@
+API_URL = "https://api.hh.ru/vacancies"
 PROFESSIONAL_ROLES_ALL = {
     1: "Event-менеджер",
     2: "PR-менеджер",

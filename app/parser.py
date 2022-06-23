@@ -13,7 +13,6 @@ connection_string = "postgresql://hints:password@localhost/hints?connect_timeout
 def get_engine(connection_string):
     if not database_exists(connection_string):
         create_database(connection_string)
-
     return create_engine(connection_string, echo=True)
 
 

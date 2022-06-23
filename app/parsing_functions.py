@@ -3,15 +3,11 @@ import requests
 import fake_useragent
 import json
 from random import random
-
 from config import *
 
 session = requests.Session()
 user = fake_useragent.UserAgent().random
 header = {"user_agent": user}
-
-
-API_URL = "https://api.hh.ru/vacancies"
 
 
 def parse_developers():
@@ -80,6 +76,8 @@ def get_and_save_by_params(url, params):
                 created_at = None
             try:
                 archived = vacancy["archived"]
+                if archived is False:
+                    archived = None
             except:
                 archived = None
             try:
@@ -88,21 +86,26 @@ def get_and_save_by_params(url, params):
                 schedule = None
 
             vacancy_url = vacancy["alternate_url"]
+            vacancy_id = vacancy_url.split("/")[-1]
+
             vacancy_dict = {
+                "vacancy_id": vacancy_id,
                 "vacancy_name": vacancy_name,
                 "profession": PROFESSIONAL_ROLES_ALL[params["professional_role"]],
                 "industry": INDUSTRIES[params["industry"]],
                 "experience": PROFESSIONAL_ROLES_ALL[params["professional_role"]],
+                "key_skills": None,
                 "employer": employer,
                 "area": area,
                 "salary_from": salary_from,
                 "salary_to": salary_to,
                 "currency": currency,
+                "job_description": None,
                 "published_at": published_at,
                 "created_at": created_at,
                 "archived": archived,
-                "schedule": schedule,
-                "url": vacancy_url,
+                "employment_type": schedule,
+                "vacancy_url": vacancy_url,
             }
             yield vacancy_dict
 
@@ -163,7 +166,7 @@ def parse_all(url, latest_only=False):
                                 data = json.loads(resp.text)
                                 if data["found"] == 0:
                                     continue
-                                for vacancy in get_and_save_by_params(
+                                for vacancy_dict in get_and_save_by_params(
                                     url, params=params
                                 ):
-                                    yield vacancy
+                                    yield vacancy_dict

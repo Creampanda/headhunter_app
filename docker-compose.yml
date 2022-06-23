@@ -1,0 +1,54 @@
+version: '3.4'
+networks:
+  hints:
+    external: false
+    ipam:
+      config:
+        - subnet: ${HINTS_SUBNET}
+services:
+  postgresql:
+    restart: unless-stopped
+    image: postgres:14.2
+    shm_size: '2gb'
+    networks:
+      hints:
+        ipv4_address: ${POSTGRES_IP}
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres:/var/lib/postgresql/data:rw
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d/:ro
+  hints:
+    # depends_on: [ postgresql]  # , kafka_test ]
+    restart: unless-stopped
+    build:
+      context: .
+      # dockerfile: ./docker/Dockerfile
+    ports:
+      - "${SUPERVISORD_PORT}:9001"
+      - "${HTTP_PORT}:5000"
+    networks:
+      hints:
+        ipv4_address: ${HINTS_IP}
+    hostname: ${STORAGE_HOSTNAME}
+    environment:
+      - HINTS_DB_CONNSTRING=${HINTS_DB_CONNSTRING}
+      - STORAGE_HOSTNAME=${STORAGE_HOSTNAME}
+    # volumes:
+      # - ./config/id_rsa:/home/hints/.ssh/id_rsa
+      # - ./config/agrofields_config.json:/home/hints/.agrofields_config
+      # - ./config/sentinel-2-wd28merhh9dss4nu-9ff0ca3730a0-key.json:/home/hints/config/google-key.json
+      # - ./config/hints_report_channels.json:/home/hints/config/hints_report_channels.json
+      # use bind mounts to specify storage location
+      # - ${STORAGE_PATH}:${STORAGE_PATH}:rw
+      # - ./agrofields:/home/hints/agrofields:rw
+      # - /mnt/disk:/DATA:rw  -- if multipart storage
+      # - /mnt/disk1:/DATA1:rw
+      # - /mnt/disk2:/DATA2:rw
+
+volumes:
+  postgres:
+    # external: true
+    # name: hints_server_postgres
+    # driver: local
+# kafka-logs:
