@@ -34,7 +34,8 @@ services:
     environment:
       - HINTS_DB_CONNSTRING=${HINTS_DB_CONNSTRING}
       - STORAGE_HOSTNAME=${STORAGE_HOSTNAME}
-    # volumes:
+    volumes:
+      - ./app:/home/hints/app:rw
       # - ./config/id_rsa:/home/hints/.ssh/id_rsa
       # - ./config/agrofields_config.json:/home/hints/.agrofields_config
       # - ./config/sentinel-2-wd28merhh9dss4nu-9ff0ca3730a0-key.json:/home/hints/config/google-key.json

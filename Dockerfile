@@ -10,4 +10,4 @@ USER hints
 COPY app /home/hints/app
 WORKDIR /home/hints/app
 RUN python3 -m pip install -r requirements.txt
-ENTRYPOINT ["python3", "app.py", "--host", "0.0.0.0"]
+ENTRYPOINT ["python3", "app.py"]

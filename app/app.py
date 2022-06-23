@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-from flask import (
-    Flask,
-    request,
-    abort,
-    g,
-    jsonify,
-    render_template
-)
+from flask import Flask, request, abort, g, jsonify, render_template
 import psycopg2
 from werkzeug.urls import url_encode
 
@@ -27,7 +20,7 @@ db_connstring = os.getenv("HINTS_DB_CONNSTRING")
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
-app.config["SECRET_KEY"] = "my secret key"
+# app.config["SECRET_KEY"] = "my secret key"
 
 # def get_db():
 #     """Opens a new database connection if there is none yet for the
@@ -43,45 +36,45 @@ app.config["SECRET_KEY"] = "my secret key"
 db = psycopg2.connect(db_connstring)
 
 
-@app.errorhandler(Exception)
-def general_error(e):
-    logging.exception("Programmer error: %s, url: %s", e, request.url)
-    return "Server error <!--{}({})-->".format(type(e).__name__, e), 500
+# @app.errorhandler(Exception)
+# def general_error(e):
+#     logging.exception("Programmer error: %s, url: %s", e, request.url)
+#     return "Server error <!--{}({})-->".format(type(e).__name__, e), 500
 
 
-@app.errorhandler(jinja2.exceptions.UndefinedError)
-def template_error(e):
-    logging.exception("Template error: %s, url: %s", e, request.url)
-    return "Server error", 500
+# @app.errorhandler(jinja2.exceptions.UndefinedError)
+# def template_error(e):
+#     logging.exception("Template error: %s, url: %s", e, request.url)
+#     return "Server error", 500
 
 
-@app.errorhandler(404)
-def error_404(e):
-    logging.exception("Error: %s, url: %s", e, request.url)
-    return "Error 404", 404
+# @app.errorhandler(404)
+# def error_404(e):
+#     logging.exception("Error: %s, url: %s", e, request.url)
+#     return "Error 404", 404
 
 
-@app.errorhandler(500)
-def error_500(e):
-    logging.exception("Error: %s, url: %s", e, request.url)
-    return "Error 500", 500
+# @app.errorhandler(500)
+# def error_500(e):
+#     logging.exception("Error: %s, url: %s", e, request.url)
+#     return "Error 500", 500
 
 
-@app.template_global()
-def modify_query(**new_values):
-    args = request.args.copy()
+# @app.template_global()
+# def modify_query(**new_values):
+#     args = request.args.copy()
 
-    for key, value in new_values.items():
-        if value is None and key in args:
-            del args[key]
-        else:
-            args[key] = value
+#     for key, value in new_values.items():
+#         if value is None and key in args:
+#             del args[key]
+#         else:
+#             args[key] = value
 
-    return "?" + format(url_encode(args)) if args else ""
+#     return "?" + format(url_encode(args)) if args else ""
 
 
-def validation_error_handler(err, data, main_def):
-    abort(jsonify({"error": str(err)}, 400))
+# def validation_error_handler(err, data, main_def):
+#     abort(jsonify({"error": str(err)}, 400))
 
 
 # class Vacancy(db.Model):
@@ -112,8 +105,26 @@ def validation_error_handler(err, data, main_def):
 
 @app.route("/")
 def hello():
-    return render_template("index.html")
+    from random import randint
+
+    data = [
+        ("01-01-2020", randint(500, 1500)),
+        ("02-01-2020", randint(500, 1500)),
+        ("03-01-2020", randint(500, 1500)),
+        ("04-01-2020", randint(500, 1500)),
+        ("05-01-2020", randint(500, 1500)),
+        ("06-01-2020", randint(500, 1500)),
+        ("07-01-2020", randint(500, 1500)),
+        ("08-01-2020", randint(500, 1500)),
+        ("09-01-2020", randint(500, 1500)),
+        ("01-01-2020", randint(500, 1500)),
+    ]
+
+    labels = [row[0] for row in data]
+    values = [row[1] for row in data]
+
+    return render_template("index.html", labels=labels, values=values)
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
