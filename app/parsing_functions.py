@@ -24,6 +24,7 @@ def parse_developers():
                 resp = session.get(API_URL, headers=header, params=params)
                 resp.encoding = "utf-8"
                 data = json.loads(resp.text)
+                print(f"Found {data['found']} vacancies for ", params)
                 if data["found"] == 0:
                     continue
                 for vacancy in get_and_save_by_params(API_URL, params=params):
@@ -93,7 +94,7 @@ def get_and_save_by_params(url, params):
                 "vacancy_name": vacancy_name,
                 "profession": PROFESSIONAL_ROLES_ALL[params["professional_role"]],
                 "industry": INDUSTRIES[params["industry"]],
-                "experience": PROFESSIONAL_ROLES_ALL[params["professional_role"]],
+                "experience": params["experience"],
                 "key_skills": None,
                 "employer": employer,
                 "area": area,
@@ -111,25 +112,31 @@ def get_and_save_by_params(url, params):
 
 
 def parse_all(url, latest_only=False):
-    params = dict()
-    if latest_only:
-        params["search_period"] = 1
     for area in AREA_IDS:
+        params = dict()
+        if latest_only:
+            params["search_period"] = 1
         sleep(random() * 5)
         params["area"] = area
         resp = session.get(url, headers=header, params=params)
         resp.encoding = "utf-8"
         data = json.loads(resp.text)
         print(f"area={area}, found={data['found']}")
+        print(f"Found {data['found']} vacancies for ", params)
         if data["found"] == 0:
             continue
         else:
             for professional_role_id in PROFESSIONAL_ROLES_ALL.keys():
                 sleep(random() * 5)
                 params["professional_role"] = professional_role_id
+                if params.get("industry"):
+                    params.pop("industry")
+                if params.get("experience"):
+                    params.pop("experience")
                 resp = session.get(url, headers=header, params=params)
                 resp.encoding = "utf-8"
                 data = json.loads(resp.text)
+                print(f"Found {data['found']} vacancies for ", params)
                 if data["found"] == 0:
                     continue
                 else:
@@ -142,28 +149,27 @@ def parse_all(url, latest_only=False):
                         ):
                             continue
                         print(
-                            f"area={area}, \
-                            profession_id = {professional_role_id}, \
-                            industry_id = {industry_id}"
+                            f"area={area}, profession_id = {professional_role_id}, industry_id = {industry_id}"
                         )
                         params["industry"] = industry_id
+                        if params.get("experience"):
+                            params.pop("experience")
                         resp = session.get(url, headers=header, params=params)
                         resp.encoding = "utf-8"
                         data = json.loads(resp.text)
+                        print(f"Found {data['found']} vacancies for ", params)
                         if data["found"] == 0:
                             continue
                         else:
                             for exp in EXPERIENCE:
                                 print(
-                                    f"area={area},\
-                                    profession_id = {professional_role_id},\
-                                    industry_id = {industry_id},\
-                                    experience = {exp}"
+                                    f"area={area}, profession_id = {professional_role_id}, industry_id = {industry_id}, experience = {exp}"
                                 )
                                 params["experience"] = exp
                                 resp = session.get(url, headers=header, params=params)
                                 resp.encoding = "utf-8"
                                 data = json.loads(resp.text)
+                                print(f"Found {data['found']} vacancies for ", params)
                                 if data["found"] == 0:
                                     continue
                                 for vacancy_dict in get_and_save_by_params(

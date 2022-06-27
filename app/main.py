@@ -6,7 +6,7 @@ from psycopg2.extras import NamedTupleCursor, DictCursor
 
 def parse_latest_and_save():
     with db, db.cursor(cursor_factory=NamedTupleCursor) as cur:
-        for vacancy_dict in parse_all(API_URL, latest_only=True):
+        for vacancy_dict in parse_all(API_URL, latest_only=False):
             cur.execute(
                 """
                 INSERT INTO vacancies
@@ -24,7 +24,6 @@ def parse_latest_and_save():
                 tuple(vacancy_dict.values()),
             )
             cur.execute("COMMIT")
-            break
 
 
 parse_latest_and_save()
