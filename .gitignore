@@ -5,3 +5,4 @@
 *.pyc
 app/proxy_test_sync.py
 app/proxy_test.py
+app/proxy_list.py

@@ -2,12 +2,24 @@ from time import sleep
 import requests
 import fake_useragent
 import json
-from random import random
+from random import random, choice
 from config import *
+from proxy_list import proxy_list
 
 session = requests.Session()
 user = fake_useragent.UserAgent().random
 header = {"user_agent": user}
+
+
+def set_proxy():
+    global session
+    proxy = choice(proxy_list)
+    session.proxies = {
+        "http": proxy,
+        "https": proxy,
+    }
+    resp = session.get("https://httpbin.org/ip")
+    print(resp.text)
 
 
 def parse_developers():
@@ -35,6 +47,14 @@ def get_and_save_by_params(url, params):
     resp = session.get(url, headers=header, params=params)
     resp.encoding = "utf-8"
     data = json.loads(resp.text)
+    # if not data.get("pages") or data.get("items"):
+    #     print("========================================")
+    #     print(data.keys())
+    #     print("========================================")
+    #     resp = session.get(url, headers=header, params=params)
+    #     resp.encoding = "utf-8"
+    #     data = json.loads(resp.text)
+
     total_pages = data["pages"]
     for i in range(0, total_pages):
         sleep(random() * 5)
@@ -112,28 +132,50 @@ def get_and_save_by_params(url, params):
 
 
 def parse_all(url, latest_only=False):
+    set_proxy()
     for area in AREA_IDS:
         params = dict()
         if latest_only:
             params["search_period"] = 1
         sleep(random() * 5)
         params["area"] = area
-        resp = session.get(url, headers=header, params=params)
+        try:
+            resp = session.get(url, headers=header, params=params)
+            assert resp.status_code == 200
+        except:
+            set_proxy()
+            resp = session.get(url, headers=header, params=params)
+            assert resp.status_code == 200
         resp.encoding = "utf-8"
         data = json.loads(resp.text)
+        print(data.keys())
         print(f"area={area}, found={data['found']}")
         print(f"Found {data['found']} vacancies for ", params)
         if data["found"] == 0:
             continue
         else:
             for professional_role_id in PROFESSIONAL_ROLES_ALL.keys():
+                #
+                # REMOVE
+                #
+                # if area == 1 and professional_role_id < 66:
+                #     continue
+                #
+                # REMOVE
+                #
                 sleep(random() * 5)
                 params["professional_role"] = professional_role_id
                 if params.get("industry"):
                     params.pop("industry")
                 if params.get("experience"):
                     params.pop("experience")
-                resp = session.get(url, headers=header, params=params)
+                try:
+                    resp = session.get(url, headers=header, params=params)
+                    assert resp.status_code == 200
+                except:
+                    set_proxy()
+                    resp = session.get(url, headers=header, params=params)
+                    assert resp.status_code == 200
                 resp.encoding = "utf-8"
                 data = json.loads(resp.text)
                 print(f"Found {data['found']} vacancies for ", params)
@@ -154,7 +196,13 @@ def parse_all(url, latest_only=False):
                         params["industry"] = industry_id
                         if params.get("experience"):
                             params.pop("experience")
-                        resp = session.get(url, headers=header, params=params)
+                        try:
+                            resp = session.get(url, headers=header, params=params)
+                            assert resp.status_code == 200
+                        except:
+                            set_proxy()
+                            resp = session.get(url, headers=header, params=params)
+                            assert resp.status_code == 200
                         resp.encoding = "utf-8"
                         data = json.loads(resp.text)
                         print(f"Found {data['found']} vacancies for ", params)
@@ -166,7 +214,17 @@ def parse_all(url, latest_only=False):
                                     f"area={area}, profession_id = {professional_role_id}, industry_id = {industry_id}, experience = {exp}"
                                 )
                                 params["experience"] = exp
-                                resp = session.get(url, headers=header, params=params)
+                                try:
+                                    resp = session.get(
+                                        url, headers=header, params=params
+                                    )
+                                    assert resp.status_code == 200
+                                except:
+                                    set_proxy()
+                                    resp = session.get(
+                                        url, headers=header, params=params
+                                    )
+                                    assert resp.status_code == 200
                                 resp.encoding = "utf-8"
                                 data = json.loads(resp.text)
                                 print(f"Found {data['found']} vacancies for ", params)
