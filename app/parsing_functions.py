@@ -15,8 +15,8 @@ def set_proxy():
     global session
     proxy = choice(proxy_list)
     session.proxies = {
-        "http": proxy,
-        "https": proxy,
+        "http": f"http://{proxy}",
+        "https": f"http://{proxy}",
     }
     resp = session.get("https://httpbin.org/ip")
     print(resp.text)
