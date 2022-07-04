@@ -4,9 +4,11 @@ from config import API_URL
 from psycopg2.extras import NamedTupleCursor, DictCursor
 
 
-def parse_latest_and_save():
+def parse_latest_and_save(start_area, end_area, i, j):
     with db, db.cursor(cursor_factory=NamedTupleCursor) as cur:
-        for vacancy_dict in parse_all(API_URL, latest_only=False):
+        for vacancy_dict in parse_all(
+            API_URL, latest_only=False, start_area=start_area, end_area=end_area, i=i, j=j
+        ):
             cur.execute(
                 """
                 INSERT INTO vacancies
@@ -26,4 +28,4 @@ def parse_latest_and_save():
             cur.execute("COMMIT")
 
 
-parse_latest_and_save()
+parse_latest_and_save(start_area=10, end_area=-1, i=0, j=-1)
