@@ -1,7 +1,24 @@
 from app import db
 from parsing_functions import Parser
 from psycopg2.extras import NamedTupleCursor, DictCursor
+from bs4 import BeautifulSoup
 
+
+def _select_item_no_descr():
+    with db, db.cursor(cursor_factory=NamedTupleCursor) as cur:
+        cur.execute(
+            """
+            SELECT *
+            FROM vacancies
+            WHERE job_description is null
+            LIMIT 1 FOR UPDATE SKIP LOCKED
+            """
+        )
+        res = cur.fetchall()
+        if not res:
+            return
+        assert len(res) == 1
+        return res[0]
 
 def parse_latest_and_save(proxies, start, end, search_period):
     # print(proxies, start, end, search_period)

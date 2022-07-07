@@ -5,6 +5,7 @@ import json
 from random import random, choice
 from config import *
 from proxy_list import proxy_list
+from bs4 import BeautifulSoup
 
 
 class Parser:
@@ -17,7 +18,6 @@ class Parser:
         self.proxies = proxies
         self.areas = AREA_IDS[start_area:end_area]
         self.search_period = search_period
-        print(f"target areas: {self.areas[0]} ... {self.areas[-1]}")
 
     def set_proxy(self):
         proxy = choice(self.proxies)
@@ -33,19 +33,29 @@ class Parser:
         print("Connected via: " + resp.json()["origin"])
         print("========================================")
 
-    def get_response_json(self, params):
-        resp = self.session.get(self.url, headers=self.header, params=params)
+    def get_response_json(self, params=None, custom_url=None):
+
+        url = custom_url if custom_url else self.url
+        resp = self.session.get(url, headers=self.header, params=params)
         assert resp.status_code == 200
         resp.encoding = "utf-8"
-        return json.loads(resp.text)
+        return resp.json()
 
     def get_and_save_by_params(self, params):
-        data = self.get_response_json(params)
+        try:
+            data = self.get_response_json(params)
+        except Exception:
+            self.set_proxy()
+            data = self.get_response_json(params)
         if not data.get("pages") or not data.get("items"):
             print("========================================")
             print(data.keys())
             print("========================================")
-            data = self.get_response_json(params)
+            try:
+                data = self.get_response_json(params)
+            except Exception:
+                self.set_proxy()
+                data = self.get_response_json(params)
 
         total_pages = data["pages"]
         for i in range(total_pages):
@@ -135,6 +145,7 @@ class Parser:
                 yield vacancy_dict
 
     def parse_all(self):
+        print(f"target areas: {self.areas[0]} ... {self.areas[-1]}")
         self.set_proxy()
         for area in self.areas:
             params = dict()
@@ -209,6 +220,18 @@ class Parser:
                                         params=params
                                     ):
                                         yield vacancy_dict
+
+    def parse_vacancy(self, vacancy_id):
+        vacancy_url = f"https://api.hh.ru/vacancies/{vacancy_id}"
+        data = self.get_response_json(custom_url=vacancy_url)
+        desc = data["description"]
+        desc = BeautifulSoup(desc, "lxml").text.strip()
+        experience = data["experience"]["id"]
+        key_skills_dict = data["key_skills"]
+        key_skills = []
+        for skill in key_skills_dict:
+            key_skills.append(skill["name"])
+        profession = data["professional_roles"][0]["name"]
 
 
 # def parse_developers():
