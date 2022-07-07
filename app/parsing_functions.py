@@ -21,6 +21,9 @@ class Parser:
 
     def set_proxy(self):
         proxy = choice(self.proxies)
+        print("========================================")
+        print("Trying via: " + proxy)
+        print("========================================")
         self.session.proxies = {
             "http": f"http://{proxy}",
             "https": f"http://{proxy}",
@@ -54,57 +57,57 @@ class Parser:
             for vacancy in data["items"]:
                 try:
                     vacancy_name = vacancy["name"]
-                except:
+                except Exception:
                     vacancy_name = None
                 try:
                     area = vacancy["area"]["name"]
-                except:
+                except Exception:
                     area = None
                 try:
                     employer = vacancy["employer"]["name"]
-                except:
+                except Exception:
                     employer = None
                 try:
                     salary_from = vacancy["salary"]["from"]
-                except:
+                except Exception:
                     salary_from = None
                 try:
                     salary_to = vacancy["salary"]["to"]
-                except:
+                except Exception:
                     salary_to = None
                 try:
                     currency = vacancy["salary"]["currency"]
-                except:
+                except Exception:
                     currency = None
                 try:
                     published_at = vacancy["published_at"]
-                except:
+                except Exception:
                     published_at = None
                 try:
                     created_at = vacancy["created_at"]
-                except:
+                except Exception:
                     created_at = None
                 try:
                     archived = vacancy["archived"]
                     if archived is False:
                         archived = None
-                except:
+                except Exception:
                     archived = None
                 try:
                     schedule = vacancy["schedule"]["name"]
-                except:
+                except Exception:
                     schedule = None
                 try:
                     profession = PROFESSIONAL_ROLES_ALL[params["professional_role"]]
-                except:
+                except Exception:
                     profession = None
                 try:
-                    INDUSTRIES[params["industry"]]
-                except:
+                    industry = INDUSTRIES[params["industry"]]
+                except Exception:
                     industry = None
                 try:
                     experience = params["experience"]
-                except:
+                except Exception:
                     experience = None
 
                 vacancy_url = vacancy["alternate_url"]
@@ -141,7 +144,7 @@ class Parser:
             params["per_page"] = 100
             try:
                 data = self.get_response_json(params)
-            except:
+            except Exception:
                 self.set_proxy()
                 data = self.get_response_json(params)
             print(f"Found {data['found']} vacancies for ", params)
@@ -160,7 +163,7 @@ class Parser:
                         params.pop("experience")
                     try:
                         data = self.get_response_json(params)
-                    except:
+                    except Exception:
                         self.set_proxy()
                         data = self.get_response_json(params)
                     print(f"Found {data['found']} vacancies for ", params)
@@ -177,7 +180,7 @@ class Parser:
                                 params.pop("experience")
                             try:
                                 data = self.get_response_json(params)
-                            except:
+                            except Exception:
                                 self.set_proxy()
                                 data = self.get_response_json(params)
                             print(f"Found {data['found']} vacancies for ", params)
@@ -194,7 +197,7 @@ class Parser:
                                     params["experience"] = exp
                                     try:
                                         data = self.get_response_json(params)
-                                    except:
+                                    except Exception:
                                         self.set_proxy()
                                         data = self.get_response_json(params)
                                     print(
