@@ -33,8 +33,9 @@ def update_vacancy(proxies):
                 vacancy_dict = parser.parse_vacancy(vacancy_for_update_id)
             except Exception as e:
                 print(e)
-                parser.set_proxy()
             else:
+                if vacancy_dict is None:
+                    continue
                 cur.execute(
                     """
                     UPDATE vacancies

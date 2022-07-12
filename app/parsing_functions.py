@@ -29,11 +29,11 @@ class Parser:
             "http": f"http://{proxy}",
             "https": f"http://{proxy}",
         }
-        sleep(10)
+        sleep(1)
         resp = self.session.get(API_URL)
-        assert resp.status_code == 200
+        assert resp.status_code == 200, resp.text
         resp = self.session.get("https://httpbin.org/ip")
-        assert resp.status_code == 200
+        assert resp.status_code == 200, resp.text
         print("========================================")
         print("Connected via: " + resp.json()["origin"])
         print("========================================")
@@ -42,7 +42,13 @@ class Parser:
     def get_response_json(self, params=None, custom_url=None):
         url = custom_url if custom_url else self.url
         resp = self.session.get(url, headers=self.header, params=params)
-        assert resp.status_code == 200
+        if (
+            resp.json().get("errors") == [{"type": "not_found"}]
+            and resp.status_code == 404
+        ):
+            print("Description not found...")
+            return None
+        assert resp.status_code == 200, resp.text
         resp.encoding = "utf-8"
         return resp.json()
 
@@ -231,7 +237,16 @@ class Parser:
 
     def parse_vacancy(self, vacancy_id):
         vacancy_url = f"https://api.hh.ru/vacancies/{vacancy_id}"
-        data = self.get_response_json(custom_url=vacancy_url)
+        try:
+            data = self.get_response_json(custom_url=vacancy_url)
+        except Exception as e:
+            print(e)
+            self.set_proxy()
+            data = self.get_response_json(custom_url=vacancy_url)
+        if data is None:
+            return
+        # print('data ', data)
+        # import pdb;pdb.set_trace()
         desc = data["description"]
         desc = BeautifulSoup(desc, "lxml").text.strip()
         experience = data["experience"]["id"]
