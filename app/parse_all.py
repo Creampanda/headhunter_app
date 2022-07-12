@@ -1,29 +1,12 @@
 from app import db
 from parsing_functions import Parser
 from psycopg2.extras import NamedTupleCursor, DictCursor
-from bs4 import BeautifulSoup
 
-
-def _select_item_no_descr():
-    with db, db.cursor(cursor_factory=NamedTupleCursor) as cur:
-        cur.execute(
-            """
-            SELECT *
-            FROM vacancies
-            WHERE job_description is null
-            LIMIT 1 FOR UPDATE SKIP LOCKED
-            """
-        )
-        res = cur.fetchall()
-        if not res:
-            return
-        assert len(res) == 1
-        return res[0]
 
 def parse_latest_and_save(proxies, start, end, search_period):
     # print(proxies, start, end, search_period)
     # print(type(proxies), type(start), type(end), type(search_period))
-    
+
     parser = Parser(proxies, start, end, search_period)
     with db, db.cursor(cursor_factory=NamedTupleCursor) as cur:
         for vacancy_dict in parser.parse_all():
@@ -35,10 +18,10 @@ def parse_latest_and_save(proxies, start, end, search_period):
                     industry, experience, key_skills, \
                     employer, area, salary_from, salary_to, \
                     currency, job_description, published_at, \
-                    created_at, archived, employment_type, vacancy_url
+                    created_at, archived, schedule, employment, vacancy_url
                     )
                 VALUES (%s, %s, %s,%s, %s, %s,%s, %s, \
-                        %s, %s,%s, %s, %s,%s, %s, %s, %s)
+                        %s, %s,%s, %s, %s,%s, %s, %s, %s, %s)
                 ON CONFLICT DO NOTHING
                 """,
                 tuple(vacancy_dict.values()),

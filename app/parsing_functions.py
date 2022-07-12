@@ -2,9 +2,8 @@ from time import sleep
 import requests
 import fake_useragent
 import json
-from random import random, choice
+from random import random
 from config import *
-from proxy_list import proxy_list
 from bs4 import BeautifulSoup
 
 
@@ -12,7 +11,6 @@ class Parser:
     def __init__(self, proxies, start_area=0, end_area=-1, search_period=0) -> None:
         self.session = requests.Session()
         user = fake_useragent.UserAgent().random
-        self.user = user
         self.header = {"user_agent": user}
         self.url = API_URL
         self.proxies = proxies
@@ -24,19 +22,24 @@ class Parser:
         print("========================================")
         print("Trying via: " + proxy)
         print("========================================")
+        self.session = requests.Session()
+        user = fake_useragent.UserAgent().random
+        self.header = {"user_agent": user}
         self.session.proxies = {
             "http": f"http://{proxy}",
             "https": f"http://{proxy}",
         }
+        sleep(10)
+        resp = self.session.get(API_URL)
+        assert resp.status_code == 200
         resp = self.session.get("https://httpbin.org/ip")
-        assert resp.status_code(200)
+        assert resp.status_code == 200
         print("========================================")
         print("Connected via: " + resp.json()["origin"])
         print("========================================")
         self.proxies.append(proxy)
 
     def get_response_json(self, params=None, custom_url=None):
-
         url = custom_url if custom_url else self.url
         resp = self.session.get(url, headers=self.header, params=params)
         assert resp.status_code == 200
@@ -240,7 +243,7 @@ class Parser:
         specializations = []
         for spec in data["specializations"]:
             specializations.append(spec["name"])
-        employment_type = data["employemnt"]["id"]
+        employment_type = data["employment"]["id"]
         archived = data["archived"]
         vacancy_dict = {
             "vacancy_id": vacancy_id,
@@ -251,7 +254,7 @@ class Parser:
             "employment": employment_type,
             "archived": archived,
         }
-        yield vacancy_dict
+        return vacancy_dict
 
 
 # def parse_developers():

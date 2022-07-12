@@ -1,57 +1,59 @@
 from app import db
-
 from parsing_functions import Parser
-from psycopg2.extras import NamedTupleCursor, DictCursor
+from random import random
 from time import sleep
-import requests
-import fake_useragent
+from psycopg2.extras import NamedTupleCursor, DictCursor
 
 
-
-vacancy = _select_item()
-print(vacancy.vacancy_id)
-vacancy_url = f"https://api.hh.ru/vacancies/{vacancy.vacancy_id}"
-
-session = requests.Session()
-user = fake_useragent.UserAgent().random
-user = user
-header = {"user_agent": user}
-resp = session.get(vacancy_url, headers=header)
-assert resp.status_code == 200
-resp.encoding = "utf-8"
-data = resp.json()
-desc = data["description"]
-desc = BeautifulSoup(desc, "lxml").text.strip()
-experience = data["experience"]["id"]
-key_skills_dict = data["key_skills"]
-key_skills = []
-for skill in key_skills_dict:
-    key_skills.append(skill["name"])
-profession = data["professional_roles"][0]["name"]
-
-
-def update_vacancy(
-profession,
-key_skills,
-experience,
-desc,
-vacancy.vacancy_id);
-
-with db, db.cursor(cursor_factory=NamedTupleCursor) as cur:
+def _select_item_no_descr(cur):
     cur.execute(
         """
-            UPDATE vacancies
-            SET profession = %(profession)s,
-                key_skills = %(key_skills)s,
-                experience = %(experience)s,
-                job_description = %(description)s
-            WHERE vacancy_id = %(vacancy_id)s
-        """,
-        {
-            "profession":  profession,
-            "key_skills":  key_skills,
-            "experience":  experience,
-            "description": desc,
-            "vacancy_id":  vacancy.vacancy_id,
-        },
+        SELECT vacancy_id
+        FROM vacancies
+        WHERE job_description is null
+        LIMIT 1 FOR UPDATE SKIP LOCKED
+        """
     )
+    res = cur.fetchall()
+    if not res:
+        return
+    assert len(res) == 1
+    return res[0]
+
+
+def update_vacancy(proxies):
+    parser = Parser(proxies)
+    parser.set_proxy()
+    with db, db.cursor(cursor_factory=NamedTupleCursor) as cur:
+        while True:
+            vacancy_for_update_id = _select_item_no_descr(cur).vacancy_id
+            print("Updating id=", vacancy_for_update_id)
+            sleep(random() * 5)
+            try:
+                vacancy_dict = parser.parse_vacancy(vacancy_for_update_id)
+            except Exception as e:
+                print(e)
+                parser.set_proxy()
+            else:
+                cur.execute(
+                    """
+                    UPDATE vacancies
+                    SET profession= %(profession)s,
+                        experience= %(experience)s,
+                        key_skills= %(key_skills)s,
+                        job_description= %(job_description)s,
+                        employment= %(employment)s,
+                        archived= %(archived)s
+                    WHERE vacancy_id = %(vacancy_id)s;
+                    """,
+                    vacancy_dict,
+                )
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("proxies", type=str, nargs="+", help="")
+    args = parser.parse_args()
+    update_vacancy(**vars(args))
