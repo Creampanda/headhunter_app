@@ -35,20 +35,28 @@ def update_vacancy(proxies):
                 print(e)
             else:
                 if vacancy_dict is None:
-                    continue
-                cur.execute(
-                    """
-                    UPDATE vacancies
-                    SET profession= %(profession)s,
-                        experience= %(experience)s,
-                        key_skills= %(key_skills)s,
-                        job_description= %(job_description)s,
-                        employment= %(employment)s,
-                        archived= %(archived)s
-                    WHERE vacancy_id = %(vacancy_id)s;
-                    """,
-                    vacancy_dict,
-                )
+                    cur.execute(
+                        """
+                        UPDATE vacancies
+                        SET job_description= %s
+                        WHERE vacancy_id = %s;
+                        """,
+                        ("Not found", vacancy_for_update_id),
+                    )
+                else:
+                    cur.execute(
+                        """
+                        UPDATE vacancies
+                        SET profession= %(profession)s,
+                            experience= %(experience)s,
+                            key_skills= %(key_skills)s,
+                            job_description= %(job_description)s,
+                            employment= %(employment)s,
+                            archived= %(archived)s
+                        WHERE vacancy_id = %(vacancy_id)s;
+                        """,
+                        vacancy_dict,
+                    )
 
 
 if __name__ == "__main__":
