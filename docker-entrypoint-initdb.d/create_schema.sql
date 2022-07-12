@@ -18,6 +18,7 @@ create table vacancies (
     published_at timestamptz,
     created_at timestamptz,
     archived boolean,
-    employment_type text,
+    schedule text,
+    employment text,
     vacancy_url text not null
 );

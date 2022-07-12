@@ -330,3 +330,4 @@ INDUSTRIES = {
     389: "Управление многопрофильными активами",
 }
 EXPERIENCE = ["between1And3", "between3And6", "noExperience", "moreThan6"]
+EMPLOYMENT = ["full", "part", "probation", "project", "volunteer"]

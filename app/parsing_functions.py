@@ -20,7 +20,7 @@ class Parser:
         self.search_period = search_period
 
     def set_proxy(self):
-        proxy = choice(self.proxies)
+        proxy = self.proxies.pop(0)
         print("========================================")
         print("Trying via: " + proxy)
         print("========================================")
@@ -29,9 +29,11 @@ class Parser:
             "https": f"http://{proxy}",
         }
         resp = self.session.get("https://httpbin.org/ip")
+        assert resp.status_code(200)
         print("========================================")
         print("Connected via: " + resp.json()["origin"])
         print("========================================")
+        self.proxies.append(proxy)
 
     def get_response_json(self, params=None, custom_url=None):
 
@@ -119,6 +121,10 @@ class Parser:
                     experience = params["experience"]
                 except Exception:
                     experience = None
+                try:
+                    employment_type = params["employment"]
+                except Exception:
+                    employment_type = None
 
                 vacancy_url = vacancy["alternate_url"]
                 vacancy_id = vacancy_url.split("/")[-1]
@@ -139,7 +145,8 @@ class Parser:
                     "published_at": published_at,
                     "created_at": created_at,
                     "archived": archived,
-                    "employment_type": schedule,
+                    "schedule": schedule,
+                    "employment": employment_type,
                     "vacancy_url": vacancy_url,
                 }
                 yield vacancy_dict
@@ -168,8 +175,8 @@ class Parser:
                 for professional_role_id in PROFESSIONAL_ROLES_ALL.keys():
                     sleep(random() * 5)
                     params["professional_role"] = professional_role_id
-                    if params.get("industry"):
-                        params.pop("industry")
+                    if params.get("employment"):
+                        params.pop("employment")
                     if params.get("experience"):
                         params.pop("experience")
                     try:
@@ -184,11 +191,9 @@ class Parser:
                         for vacancy_dict in self.get_and_save_by_params(params=params):
                             yield vacancy_dict
                     else:
-                        for industry_id in INDUSTRIES.keys():
+                        for exp in EXPERIENCE:
                             sleep(random() * 5)
-                            params["industry"] = industry_id
-                            if params.get("experience"):
-                                params.pop("experience")
+                            params["experience"] = exp
                             try:
                                 data = self.get_response_json(params)
                             except Exception:
@@ -203,9 +208,9 @@ class Parser:
                                 ):
                                     yield vacancy_dict
                             else:
-                                for exp in EXPERIENCE:
+                                for employment_type in EMPLOYMENT:
                                     sleep(random() * 5)
-                                    params["experience"] = exp
+                                    params["employment"] = employment_type
                                     try:
                                         data = self.get_response_json(params)
                                     except Exception:
@@ -232,6 +237,21 @@ class Parser:
         for skill in key_skills_dict:
             key_skills.append(skill["name"])
         profession = data["professional_roles"][0]["name"]
+        specializations = []
+        for spec in data["specializations"]:
+            specializations.append(spec["name"])
+        employment_type = data["employemnt"]["id"]
+        archived = data["archived"]
+        vacancy_dict = {
+            "vacancy_id": vacancy_id,
+            "profession": profession,
+            "experience": experience,
+            "key_skills": key_skills,
+            "job_description": desc,
+            "employment": employment_type,
+            "archived": archived,
+        }
+        yield vacancy_dict
 
 
 # def parse_developers():
