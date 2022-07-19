@@ -1,5 +1,5 @@
 from app import db
-from parsing_functions import Parser
+from parser import Parser
 from random import random
 from time import sleep
 from psycopg2.extras import NamedTupleCursor, DictCursor

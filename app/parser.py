@@ -165,7 +165,7 @@ class Parser:
         self.set_proxy()
         for area in self.areas:
             params = dict()
-            params["search_period"] = self.search_period
+            params["period"] = self.search_period
             sleep(random() * 5)
             params["area"] = area
             params["per_page"] = 100
@@ -270,6 +270,16 @@ class Parser:
             "archived": archived,
         }
         return vacancy_dict
+
+    def test(self):
+        resp = self.get_response_json()
+        print(resp.keys())
+        self.set_proxy()
+        resp = self.get_response_json()
+        print(resp.keys())
+        self.set_proxy()
+        resp = self.get_response_json()
+        print(resp.keys())
 
 
 # def parse_developers():
