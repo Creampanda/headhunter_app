@@ -57,6 +57,8 @@ def update_vacancy(proxies):
                         """,
                         vacancy_dict,
                     )
+                    
+                cur.execute("commit")
 
 
 if __name__ == "__main__":
