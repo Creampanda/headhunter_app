@@ -1,10 +1,12 @@
 from time import sleep
 import requests
 import fake_useragent
-import json
 from random import random
 from config import *
 from bs4 import BeautifulSoup
+
+import os
+import psycopg2
 
 
 class Parser:
@@ -16,6 +18,8 @@ class Parser:
         self.proxies = proxies
         self.areas = AREA_IDS[start_area:end_area]
         self.search_period = search_period
+        db_connstring = os.getenv("HINTS_DB_CONNSTRING")
+        self.db = psycopg2.connect(db_connstring)
 
     def set_proxy(self):
         proxy = self.proxies.pop(0)
@@ -59,9 +63,9 @@ class Parser:
             self.set_proxy()
             data = self.get_response_json(params)
         if not data.get("pages") or not data.get("items"):
-            print("========================================")
-            print(data.keys())
-            print("========================================")
+            # print("========================================")
+            # print(data.keys())
+            # print("========================================")
             try:
                 data = self.get_response_json(params)
             except Exception:
@@ -161,7 +165,7 @@ class Parser:
                 yield vacancy_dict
 
     def parse_all(self):
-        print(f"target areas: {self.areas[0]} ... {self.areas[-1]}")
+        print(f"target areas: {self.areas[0]} ... {self.areas[-1]}", end="\r")
         self.set_proxy()
         for area in self.areas:
             params = dict()
@@ -174,7 +178,7 @@ class Parser:
             except Exception:
                 self.set_proxy()
                 data = self.get_response_json(params)
-            print(f"Found {data['found']} vacancies for ", params)
+            print(f"Found {data['found']} vacancies for ", params, end="\r")
             if data["found"] == 0:
                 continue
             if data["found"] <= 2000:
@@ -193,7 +197,7 @@ class Parser:
                     except Exception:
                         self.set_proxy()
                         data = self.get_response_json(params)
-                    print(f"Found {data['found']} vacancies for ", params)
+                    print(f"Found {data['found']} vacancies for ", params, end="\r")
                     if data["found"] == 0:
                         continue
                     if data["found"] <= 2000:
@@ -208,7 +212,11 @@ class Parser:
                             except Exception:
                                 self.set_proxy()
                                 data = self.get_response_json(params)
-                            print(f"Found {data['found']} vacancies for ", params)
+                            print(
+                                f"Found {data['found']} vacancies for ",
+                                params,
+                                end="\r",
+                            )
                             if data["found"] == 0:
                                 continue
                             if data["found"] <= 2000:
@@ -226,7 +234,9 @@ class Parser:
                                         self.set_proxy()
                                         data = self.get_response_json(params)
                                     print(
-                                        f"Found {data['found']} vacancies for ", params
+                                        f"Found {data['found']} vacancies for ",
+                                        params,
+                                        end="\r",
                                     )
                                     if data["found"] == 0:
                                         continue

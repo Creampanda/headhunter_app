@@ -1,8 +1,8 @@
-from app import db
 from parser import Parser
 from random import random
 from time import sleep
 from psycopg2.extras import NamedTupleCursor, DictCursor
+from datetime import datetime
 
 
 def _select_item_no_descr(cur):
@@ -24,10 +24,10 @@ def _select_item_no_descr(cur):
 def update_vacancy(proxies):
     parser = Parser(proxies)
     parser.set_proxy()
-    with db, db.cursor(cursor_factory=NamedTupleCursor) as cur:
+    with parser.db, parser.db.cursor(cursor_factory=NamedTupleCursor) as cur:
         while True:
             vacancy_for_update_id = _select_item_no_descr(cur).vacancy_id
-            print("Updating id=", vacancy_for_update_id)
+            print(f"{datetime.now()} Updating id =", vacancy_for_update_id, end="... ")
             sleep(random() * 5)
             try:
                 vacancy_dict = parser.parse_vacancy(vacancy_for_update_id)
@@ -43,6 +43,8 @@ def update_vacancy(proxies):
                         """,
                         ("Not found", vacancy_for_update_id),
                     )
+                    print("Not found!")
+
                 else:
                     cur.execute(
                         """
@@ -57,7 +59,8 @@ def update_vacancy(proxies):
                         """,
                         vacancy_dict,
                     )
-                    
+                    print("Success!")
+
                 cur.execute("commit")
 
 

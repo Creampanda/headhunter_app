@@ -7,3 +7,4 @@ app/proxy_test_sync.py
 app/proxy_test.py
 app/proxy_list.py
 supervisor_tasks.conf
+app/proxy_list

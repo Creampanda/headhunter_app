@@ -1,4 +1,3 @@
-from app import db
 from parser import Parser
 from psycopg2.extras import NamedTupleCursor, DictCursor
 
@@ -8,7 +7,7 @@ def parse_latest_and_save(proxies, start, end, search_period):
     # print(type(proxies), type(start), type(end), type(search_period))
 
     parser = Parser(proxies, start, end, search_period)
-    with db, db.cursor(cursor_factory=NamedTupleCursor) as cur:
+    with parser.db, parser.db.cursor(cursor_factory=NamedTupleCursor) as cur:
         for vacancy_dict in parser.parse_all():
             cur.execute(
                 """
