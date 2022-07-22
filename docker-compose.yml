@@ -21,7 +21,6 @@ services:
       - postgres:/var/lib/postgresql/data:rw
       - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d/:ro
   hints:
-    # depends_on: [ postgresql]  # , kafka_test ]
     restart: unless-stopped
     build:
       context: .
@@ -38,20 +37,3 @@ services:
       - STORAGE_HOSTNAME=${STORAGE_HOSTNAME}
     volumes:
       - ./app:/home/hints/app:rw
-      # - ./config/id_rsa:/home/hints/.ssh/id_rsa
-      # - ./config/agrofields_config.json:/home/hints/.agrofields_config
-      # - ./config/sentinel-2-wd28merhh9dss4nu-9ff0ca3730a0-key.json:/home/hints/config/google-key.json
-      # - ./config/hints_report_channels.json:/home/hints/config/hints_report_channels.json
-      # use bind mounts to specify storage location
-      # - ${STORAGE_PATH}:${STORAGE_PATH}:rw
-      # - ./agrofields:/home/hints/agrofields:rw
-      # - /mnt/disk:/DATA:rw  -- if multipart storage
-      # - /mnt/disk1:/DATA1:rw
-      # - /mnt/disk2:/DATA2:rw
-
-volumes:
-  postgres:
-    # external: true
-    # name: hints_server_postgres
-    # driver: local
-# kafka-logs:
