@@ -43,7 +43,7 @@ def update_vacancy(proxies):
                         """,
                         ("Not found", vacancy_for_update_id),
                     )
-                    print("Not found!")
+                    print("Not found!", end="\r")
 
                 else:
                     cur.execute(
@@ -59,7 +59,7 @@ def update_vacancy(proxies):
                         """,
                         vacancy_dict,
                     )
-                    print("Success!")
+                    print("Success!", end="\r")
 
                 cur.execute("commit")
 

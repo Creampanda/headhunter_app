@@ -50,7 +50,7 @@ class Parser:
             resp.json().get("errors") == [{"type": "not_found"}]
             and resp.status_code == 404
         ):
-            print("Description not found...")
+            print("Description not found...", end="\r")
             return None
         assert resp.status_code == 200, resp.text
         resp.encoding = "utf-8"

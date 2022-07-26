@@ -37,3 +37,6 @@ services:
       - STORAGE_HOSTNAME=${STORAGE_HOSTNAME}
     volumes:
       - ./app:/home/hints/app:rw
+
+volumes:
+  postgres:
